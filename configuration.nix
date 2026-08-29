@@ -28,6 +28,7 @@
   nix-homebrew = {
     enable = true;
     inherit user;
+    autoMigrate = true;
   };
   homebrew = {
     enable = true;
@@ -36,10 +37,13 @@
     onActivation.extraFlags = [ "--force" ];
     brews = [
       "herdr"
+      "terraform"
+      "gh"
     ];
     casks = [
       "wezterm"
       "claude-code"
+      "fluidvoice"
     ];
   };
 }
