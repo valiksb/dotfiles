@@ -37,6 +37,7 @@
     onActivation.extraFlags = [ "--force" ];
     brews = [
       "herdr"
+      "treehouse"
       "terraform"
       "gh"
     ];
