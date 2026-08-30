@@ -44,6 +44,7 @@
       "wezterm"
       "claude-code"
       "fluidvoice"
+      "gcloud-cli"
     ];
   };
 }
