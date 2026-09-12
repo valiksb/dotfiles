@@ -26,6 +26,10 @@
     trackpad.Clicking = true;              # tap to click
     CustomSystemPreferences."com.apple.controlcenter".AutoHideMenuBarOption = 3; # macOS 26: 3 = "Never" (always show menu bar)
   };
+  system.activationScripts.extraActivation.text = ''
+    sudo -u ${user} defaults -currentHost write com.apple.screensaver idleTime -int 300
+  '';
+
   nix-homebrew = {
     enable = true;
     inherit user;
