@@ -17,13 +17,14 @@
       AppleInterfaceStyle = "Dark";
       KeyRepeat = 2;          # fast key repeat
       InitialKeyRepeat = 15;  # short delay before repeat
-      _HIHideMenuBar = true;  # auto-hide the menu bar
+      _HIHideMenuBar = false;
       AppleShowAllExtensions = true;
     };
     dock.autohide = true;
     finder.FXPreferredViewStyle = "Nlsv";  # list view by default
     finder.CreateDesktop = false;          # clean desktop
     trackpad.Clicking = true;              # tap to click
+    CustomSystemPreferences."com.apple.controlcenter".AutoHideMenuBarOption = 3; # macOS 26: 3 = "Never" (always show menu bar)
   };
   nix-homebrew = {
     enable = true;
