@@ -66,6 +66,18 @@ Change the host label or CPU architecture if needed, and read the Homebrew clean
 
 After that, `darwin-rebuild` exists and you're on the normal workflow below.
 
+## Setup without Nix
+
+If Nix can't be installed (for example an MDM profile blocks the Nix Store volume), use the Homebrew-based path instead:
+
+```sh
+./bootstrap-brew.sh
+```
+
+It installs everything in `Brewfile`, symlinks the same config files `home.nix` would (plus `home/.zshrc` and `home/.config/starship.toml`, which replace the zsh and starship modules), and runs `macos-defaults.sh`.
+Unlike the Nix setup it never removes packages missing from the Brewfile, and it backs up any existing real file it would replace to `<name>.bak`.
+It is idempotent, so re-run it after any change.
+
 ### Validate without applying
 
 Once Nix is installed (`bootstrap.sh` step 1 handles that), you can check that the config builds without touching your system - handy when you have edited something:
