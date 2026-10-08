@@ -4,8 +4,9 @@
 # from configuration.nix (brews)
 brew "herdr"
 brew "treehouse"
-tap "hashicorp/tap"  # terraform left homebrew-core (license change)
-brew "hashicorp/tap/terraform"
+# terraform is provided by tfenv (already installed here); the unversioned
+# terraform formula is no longer in homebrew-core and would conflict with it.
+brew "tfenv"
 brew "gh"
 
 # from configuration.nix (casks)
