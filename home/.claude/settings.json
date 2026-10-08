@@ -21,7 +21,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "command -v lavish-axi >/dev/null 2>&1 && lavish-axi || true",
+            "command": "lavish-axi",
             "timeout": 10
           }
         ]
@@ -31,7 +31,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "command -v gh-axi >/dev/null 2>&1 && gh-axi || true",
+            "command": "gh-axi",
             "timeout": 10
           }
         ]
@@ -41,7 +41,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "command -v chrome-devtools-axi >/dev/null 2>&1 && chrome-devtools-axi || true",
+            "command": "chrome-devtools-axi",
             "timeout": 10
           }
         ]
