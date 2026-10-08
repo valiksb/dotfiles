@@ -1,4 +1,9 @@
 {
+  "permissions": {
+    "allow": [
+      "Edit(path:\"**/cbwg-infrastructure/main.tf\")"
+    ]
+  },
   "hooks": {
     "SessionStart": [
       {
@@ -6,7 +11,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash '/Users/valiksb/.claude/hooks/herdr-agent-state.sh' session",
+            "command": "f=\"$HOME/.claude/hooks/herdr-agent-state.sh\"; [ -f \"$f\" ] && bash \"$f\" session || true",
             "timeout": 10
           }
         ]
@@ -16,7 +21,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "lavish-axi",
+            "command": "command -v lavish-axi >/dev/null 2>&1 && lavish-axi || true",
             "timeout": 10
           }
         ]
@@ -26,7 +31,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "gh-axi",
+            "command": "command -v gh-axi >/dev/null 2>&1 && gh-axi || true",
             "timeout": 10
           }
         ]
@@ -36,7 +41,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "chrome-devtools-axi",
+            "command": "command -v chrome-devtools-axi >/dev/null 2>&1 && chrome-devtools-axi || true",
             "timeout": 10
           }
         ]
@@ -49,10 +54,5 @@
   },
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark-ansi",
-  "agentPushNotifEnabled": true,
-  "permissions": {
-    "allow": [
-      "Edit(path:\"**/cbwg-infrastructure/main.tf\")"
-    ]
-  }
+  "agentPushNotifEnabled": true
 }
