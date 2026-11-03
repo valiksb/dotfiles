@@ -6,6 +6,16 @@
 
   nixpkgs.config.allowUnfree = true;
   nixpkgs.hostPlatform = "aarch64-darwin"; # use x86_64-darwin for Intel CPU
+  nixpkgs.overlays = [
+    # Upstream tesla_auth hardcodes Linux GTK/webkitgtk deps (webkitgtk is broken
+    # on darwin). On macOS it uses the system WebKit, so drop them.
+    (final: prev: {
+      tesla_auth = prev.tesla_auth.overrideAttrs (old: {
+        nativeBuildInputs = final.lib.remove final.wrapGAppsHook3 old.nativeBuildInputs;
+        buildInputs = [ ];
+      });
+    })
+  ];
 
   system.primaryUser = user;
   users.users.${user} = {
