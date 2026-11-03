@@ -42,6 +42,8 @@
     onActivation.extraFlags = [ "--force" ];
     brews = [
       "herdr"
+      "node"
+      "podman-compose"
       "treehouse"
       "terraform"
       "gh"
