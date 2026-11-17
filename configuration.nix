@@ -1,4 +1,30 @@
-{ user, ... }:
+{ pkgs, user, ... }:
+
+let
+  photosMount = pkgs.writeShellScript "photos-mount" ''
+    export PATH="/sbin:/usr/sbin:/usr/bin:/bin"
+
+    waited=0
+    until /sbin/route -n get default >/dev/null 2>&1 || [ "$waited" -ge 60 ]; do
+      sleep 5
+      waited=$((waited + 5))
+    done
+
+    mount_point="/Users/${user}/SolorzanoPhotos"
+
+    if [ ! -d "$mount_point" ]; then
+      mkdir -p "$mount_point"
+    fi
+
+    if /sbin/mount | grep -qF " on $mount_point "; then
+      echo "Already mounted at $mount_point"
+      exit 0
+    fi
+
+    # Credentials are read from the macOS Keychain; no password in args.
+    /sbin/mount_smbfs "//valiksb@Acts-10-4/Photos" "$mount_point"
+  '';
+in
 
 {
   # Determinate already manages the Nix daemon, so nix-darwin shouldn't.
@@ -14,13 +40,6 @@
         nativeBuildInputs = final.lib.remove final.wrapGAppsHook3 old.nativeBuildInputs;
         buildInputs = [ ];
       });
-      # nixpkgs marks osxphotos broken (unverified build failure, not platform-restricted).
-      # The package declares aarch64-darwin support; override here until upstream clears the flag.
-      python3 = prev.python3.override {
-        packageOverrides = _: super: {
-          osxphotos = super.osxphotos.overridePythonAttrs (_: { meta = super.osxphotos.meta // { broken = false; }; });
-        };
-      };
     })
   ];
 
@@ -74,29 +93,7 @@
   };
 
   launchd.user.agents.photos-mount = {
-    script = ''
-      export PATH="/sbin:/usr/sbin:/usr/bin:/bin"
-
-      waited=0
-      until /sbin/route -n get default >/dev/null 2>&1 || [ "$waited" -ge 60 ]; do
-        sleep 5
-        waited=$((waited + 5))
-      done
-
-      mount_point="/Users/${user}/SolorzanoPhotos"
-
-      if [ ! -d "$mount_point" ]; then
-        mkdir -p "$mount_point"
-      fi
-
-      if /sbin/mount | grep -qF " on $mount_point "; then
-        echo "Already mounted at $mount_point"
-        exit 0
-      fi
-
-      # Credentials are read from the macOS Keychain; no password in args.
-      /sbin/mount_smbfs "//valiksb@Acts-10-4/Photos" "$mount_point"
-    '';
+    command = "${photosMount}";
     serviceConfig = {
       RunAtLoad = true;
       KeepAlive = false;
@@ -107,12 +104,13 @@
 
   launchd.user.agents.photo-export = {
     script = ''
-      export PATH="/Users/${user}/.nix-profile/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+      export PATH="/Users/${user}/.local/bin:/etc/profiles/per-user/${user}/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+      ${photosMount} >>"/Users/${user}/Library/Logs/photos-mount.log" 2>&1 || true
       exec /Users/${user}/Documents/immich-app/scripts/export_photos.sh
     '';
     serviceConfig = {
       StartCalendarInterval = [{ Hour = 2; Minute = 0; }];
-      StandardOutPath = "/Users/${user}/Library/Logs/photo_export.log";
+      StandardOutPath = "/dev/null";
       StandardErrorPath = "/Users/${user}/Library/Logs/photo_export.log";
     };
   };

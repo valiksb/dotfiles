@@ -186,7 +186,19 @@ Home Manager deliberately does not manage `~/.pi/agent` itself, or Pi authentica
 Two login agents manage the NAS photo workflow:
 
 - **photos-mount** runs at login, waits up to 60 seconds for a network default route, then mounts `//valiksb@Acts-10-4/Photos` at `~/SolorzanoPhotos` using `mount_smbfs`. It skips the mount if the share is already mounted, and logs to `~/Library/Logs/photos-mount.log`.
-- **photo-export** runs daily at 02:00 and executes `~/Documents/immich-app/scripts/export_photos.sh`, logging to `~/Library/Logs/photo_export.log`. The export script aborts safely if the share is not mounted.
+- **photo-export** runs daily at 02:00. It first runs the same mount step (skipped if the share is already mounted, logged to `~/Library/Logs/photos-mount.log`), then executes `~/Documents/immich-app/scripts/export_photos.sh`, logging to `~/Library/Logs/photo_export.log`. The export script aborts safely if the share is still not mounted.
+
+Immich itself uses a separate NAS user named `immich`. The Mac-side Photos mount above stays on the `valiksb` account, with its credential in the Keychain.
+
+### One-time osxphotos install
+
+The export script needs `osxphotos`. `uv` is installed by this config; install `osxphotos` once with:
+
+```sh
+uv tool install osxphotos
+```
+
+`uv` puts the binary in `~/.local/bin`, which is on the photo-export agent's `PATH`.
 
 ### One-time Keychain setup
 
