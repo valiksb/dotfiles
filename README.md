@@ -25,12 +25,13 @@ Running the switch builds:
 
 - System settings (dark mode, key repeat, dock, Finder, trackpad)
 - Homebrew apps (casks and CLI tools)
-- Nix user packages (ripgrep, fd, fzf, jq, lazygit, tesla_auth, Neovim, Hack Nerd Font)
+- Nix user packages (ripgrep, fd, fzf, jq, lazygit, tesla_auth, Neovim, Hack Nerd Font, uv)
 - Shell (zsh, aliases, starship prompt)
 - Editor (Neovim config with the rose-pine moon theme)
 - Terminal (WezTerm config with the rose-pine moon theme and dimmed unfocused windows)
 - Agent configs (Claude, Codex, opencode all share one AGENTS.md)
 - Login agent that starts the Podman machine and self-hosted apps (TeslaMate, Immich) once at login; logs to `~/Library/Logs/podman-login.log`
+- NAS photo mount at login and a daily photo export (see "NAS photo mount and export" below)
 - Optional Pi theme and local extensions, generic UI settings and model overrides, plus two deliberately pinned third-party Pi packages
 
 ## Prerequisites
@@ -134,7 +135,7 @@ If you don't use it, just remove it from `brews` in your copy.
 
 - `flake.nix` - the entry point.
   Wires up nixpkgs, nix-darwin, home-manager, and nix-homebrew, and declares the `mac` machine.
-- `configuration.nix` - system-level config: macOS defaults, Homebrew, the Podman login agent.
+- `configuration.nix` - system-level config: macOS defaults, Homebrew, the Podman, photo mount, and photo export launchd agents.
 - `home.nix` - user-level config: shell, packages, prompt, and the symlinks described below.
 - `rebuild.sh` - re-applies the config after the first switch.
   Run this every time you make a change.
@@ -183,7 +184,7 @@ Home Manager deliberately does not manage `~/.pi/agent` itself, or Pi authentica
 
 ## NAS photo mount and export
 
-Two login agents manage the NAS photo workflow:
+Two launchd user agents manage the NAS photo workflow:
 
 - **photos-mount** runs at login, waits up to 60 seconds for a network default route, then mounts `//valiksb@Acts-10-4/Photos` at `~/SolorzanoPhotos` using `mount_smbfs`. It skips the mount if the share is already mounted, and logs to `~/Library/Logs/photos-mount.log`.
 - **photo-export** runs daily at 02:00. It first runs the same mount step (skipped if the share is already mounted, logged to `~/Library/Logs/photos-mount.log`), then executes `~/Documents/immich-app/scripts/export_photos.sh`, logging to `~/Library/Logs/photo_export.log`. The export script aborts safely if the share is still not mounted.
