@@ -30,6 +30,7 @@ Running the switch builds:
 - Editor (Neovim config with the rose-pine moon theme)
 - Terminal (WezTerm config with the rose-pine moon theme and dimmed unfocused windows)
 - Agent configs (Claude, Codex, opencode all share one AGENTS.md)
+- Login agent that starts the Podman machine and self-hosted apps (TeslaMate, Immich) once at login; logs to `~/Library/Logs/podman-login.log`
 - Optional Pi theme and local extensions, generic UI settings and model overrides, plus two deliberately pinned third-party Pi packages
 
 ## Prerequisites
@@ -133,7 +134,7 @@ If you don't use it, just remove it from `brews` in your copy.
 
 - `flake.nix` - the entry point.
   Wires up nixpkgs, nix-darwin, home-manager, and nix-homebrew, and declares the `mac` machine.
-- `configuration.nix` - system-level config: macOS defaults, Homebrew.
+- `configuration.nix` - system-level config: macOS defaults, Homebrew, the Podman login agent.
 - `home.nix` - user-level config: shell, packages, prompt, and the symlinks described below.
 - `rebuild.sh` - re-applies the config after the first switch.
   Run this every time you make a change.
