@@ -181,6 +181,31 @@ Both packages execute with your full user permissions and must be trusted like a
 
 Home Manager deliberately does not manage `~/.pi/agent` itself, or Pi authentication, sessions, trust decisions, caches, npm/git package trees, or any other runtime state. The model overrides contain no credentials or endpoint settings, do not choose a default model, and only take effect after you authenticate Pi yourself. This remains an additive post-video layer: it does not install Pi, a launcher, or package source code into this repository.
 
+## NAS photo mount and export
+
+Two login agents manage the NAS photo workflow:
+
+- **photos-mount** runs at login, waits up to 60 seconds for a network default route, then mounts `//valiksb@Acts-10-4/Photos` at `~/SolorzanoPhotos` using `mount_smbfs`. It skips the mount if the share is already mounted, and logs to `~/Library/Logs/photos-mount.log`.
+- **photo-export** runs daily at 02:00 and executes `~/Documents/immich-app/scripts/export_photos.sh`, logging to `~/Library/Logs/photo_export.log`. The export script aborts safely if the share is not mounted.
+
+### One-time Keychain setup
+
+The mount agent reads credentials from the macOS Keychain - no password is stored in any file, argument, or log.
+Before the mount will work, connect once via Finder:
+
+1. In Finder, press `Cmd+K` (Go > Connect to Server).
+2. Enter `smb://Acts-10-4/Photos` and click Connect.
+3. Enter username `valiksb` and the share password.
+4. Tick **"Remember this password in my keychain"** before clicking Connect.
+
+After that one-time step, `mount_smbfs` reads the credential from Keychain automatically on every subsequent mount.
+
+### macOS permissions
+
+`osxphotos` reads the Photos library from a background job.
+The first time it runs, macOS may require you to grant **Photos** or **Full Disk Access** to the launch agent (or to `osxphotos` itself) in System Settings > Privacy & Security.
+Verify this on the machine after the first activation.
+
 ## Notes
 
 The first time you launch `nvim`, it bootstraps [lazy.nvim](https://github.com/folke/lazy.nvim) by cloning plugins from GitHub.

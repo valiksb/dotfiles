@@ -14,6 +14,13 @@
         nativeBuildInputs = final.lib.remove final.wrapGAppsHook3 old.nativeBuildInputs;
         buildInputs = [ ];
       });
+      # nixpkgs marks osxphotos broken (unverified build failure, not platform-restricted).
+      # The package declares aarch64-darwin support; override here until upstream clears the flag.
+      python3 = prev.python3.override {
+        packageOverrides = _: super: {
+          osxphotos = super.osxphotos.overridePythonAttrs (_: { meta = super.osxphotos.meta // { broken = false; }; });
+        };
+      };
     })
   ];
 
@@ -64,6 +71,50 @@
       "fluidvoice"
       "gcloud-cli"
     ];
+  };
+
+  launchd.user.agents.photos-mount = {
+    script = ''
+      export PATH="/sbin:/usr/sbin:/usr/bin:/bin"
+
+      waited=0
+      until /sbin/route -n get default >/dev/null 2>&1 || [ "$waited" -ge 60 ]; do
+        sleep 5
+        waited=$((waited + 5))
+      done
+
+      mount_point="/Users/${user}/SolorzanoPhotos"
+
+      if [ ! -d "$mount_point" ]; then
+        mkdir -p "$mount_point"
+      fi
+
+      if /sbin/mount | grep -qF " on $mount_point "; then
+        echo "Already mounted at $mount_point"
+        exit 0
+      fi
+
+      # Credentials are read from the macOS Keychain; no password in args.
+      /sbin/mount_smbfs "//valiksb@Acts-10-4/Photos" "$mount_point"
+    '';
+    serviceConfig = {
+      RunAtLoad = true;
+      KeepAlive = false;
+      StandardOutPath = "/Users/${user}/Library/Logs/photos-mount.log";
+      StandardErrorPath = "/Users/${user}/Library/Logs/photos-mount.log";
+    };
+  };
+
+  launchd.user.agents.photo-export = {
+    script = ''
+      export PATH="/Users/${user}/.nix-profile/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+      exec /Users/${user}/Documents/immich-app/scripts/export_photos.sh
+    '';
+    serviceConfig = {
+      StartCalendarInterval = [{ Hour = 2; Minute = 0; }];
+      StandardOutPath = "/Users/${user}/Library/Logs/photo_export.log";
+      StandardErrorPath = "/Users/${user}/Library/Logs/photo_export.log";
+    };
   };
 
   launchd.user.agents.podman-login = {
