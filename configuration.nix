@@ -1,4 +1,30 @@
-{ user, ... }:
+{ pkgs, user, ... }:
+
+let
+  photosMount = pkgs.writeShellScript "photos-mount" ''
+    export PATH="/sbin:/usr/sbin:/usr/bin:/bin"
+
+    waited=0
+    until /sbin/route -n get default >/dev/null 2>&1 || [ "$waited" -ge 60 ]; do
+      sleep 5
+      waited=$((waited + 5))
+    done
+
+    mount_point="/Users/${user}/SolorzanoPhotos"
+
+    if [ ! -d "$mount_point" ]; then
+      mkdir -p "$mount_point"
+    fi
+
+    if /sbin/mount | grep -qF " on $mount_point "; then
+      echo "Already mounted at $mount_point"
+      exit 0
+    fi
+
+    # Credentials are read from the macOS Keychain; no password in args.
+    /sbin/mount_smbfs "//valiksb@Acts-10-4/Photos" "$mount_point"
+  '';
+in
 
 {
   # Determinate already manages the Nix daemon, so nix-darwin shouldn't.
@@ -64,6 +90,29 @@
       "fluidvoice"
       "gcloud-cli"
     ];
+  };
+
+  launchd.user.agents.photos-mount = {
+    command = "${photosMount}";
+    serviceConfig = {
+      RunAtLoad = true;
+      KeepAlive = false;
+      StandardOutPath = "/Users/${user}/Library/Logs/photos-mount.log";
+      StandardErrorPath = "/Users/${user}/Library/Logs/photos-mount.log";
+    };
+  };
+
+  launchd.user.agents.photo-export = {
+    script = ''
+      export PATH="/Users/${user}/.local/bin:/etc/profiles/per-user/${user}/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+      ${photosMount} >>"/Users/${user}/Library/Logs/photos-mount.log" 2>&1 || true
+      exec /Users/${user}/Documents/immich-app/scripts/export_photos.sh
+    '';
+    serviceConfig = {
+      StartCalendarInterval = [{ Hour = 2; Minute = 0; }];
+      StandardOutPath = "/dev/null";
+      StandardErrorPath = "/Users/${user}/Library/Logs/photo_export.log";
+    };
   };
 
   launchd.user.agents.podman-login = {

@@ -19,6 +19,8 @@ in
     neovim
     # the font everything renders in
     nerd-fonts.hack
+    # installs osxphotos for the daily photo-export login agent
+    uv
   ];
   fonts.fontconfig.enable = true;
   home.sessionVariables.EDITOR = "nvim";
